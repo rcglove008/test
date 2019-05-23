@@ -1,0 +1,301 @@
+a.tsx
+
+import Taro, {Config} from '@tarojs/taro';
+import { View} from '@tarojs/components'
+import {AtGrid, AtList, AtListItem, AtTabBar,AtLoadMore} from "taro-ui";
+import './a.scss';
+
+
+export default class A extends Taro.Component {
+  config: Config = { "navigationBarTitleText": " 任务类型", }
+  state={
+    issues:[],
+    status: 'more',
+    projectsId:'',
+    trackerId:'',
+    content: [],
+    endnum:20,
+    arraySelect:'',
+    selecList:[],
+    selectPerson1: false,
+    selectPerson2: false,
+    selectPerson3: false,
+    firstPerson: ['状 态','排 序','分 组'],
+
+
+  }
+  async componentWillMount() {
+
+    const {params} = this.$router;
+    const projectsId = params.id;
+    const trackerId = params.trackid;
+    this.query(projectsId,trackerId)
+    this.setState({
+      projectsId:projectsId,
+      trackerId:trackerId,
+    })
+
+  }
+
+  async query(projectsId,trackerId,n: number = 10) {
+    this.state.endnum+=n;
+    await Taro.showLoading({ title: 'loading', mask: true});
+    try {
+      const url = await guigu.getUrl(`/issues.json`, {
+        project_id: projectsId,
+        tracker_id: trackerId,
+        offset:0,
+        limit:this.state.endnum,
+        sort: ['created_on:desc','updated_on']
+      });
+      console.log(url);
+      try {
+        const res= await Taro.request({method: 'GET', url});
+        console.log(1111111)
+        console.log(res.data.issues)
+        let issues=res.data.issues
+        this.setState({issues : issues ||'',
+          selecList: issues ||''});
+      } catch (e) {
+        console.log(e);
+        console.log('请求错误信息');
+      }
+      console.log(url)
+
+    } catch(e){
+      console.log(e)
+    } finally {
+      await Taro.hideLoading();
+    }}
+
+  handleClick (issuesId) {
+    Taro.navigateTo({url: '/pages/project/detailed/detailed?id='+issuesId});
+    console.log(issuesId)
+  }
+
+  async moreClick () {
+    // 开始加载
+    this.setState({
+      status: 'loading'
+    })
+    // 模拟异步请求数据
+    this.querySelect(this.state.projectsId,this.state.trackerId,this.state.arraySelect,10)
+    await  setTimeout(() => {
+      this.setState({
+        status: 'more'
+      })
+    }, 2000)
+  }
+
+
+  clickPerson (id) {
+
+    if (id==1) {
+      this.setState({
+        selectPerson1: true,
+        selectPerson2: false,
+        selectPerson3: false
+      })
+    }else if (id==2) {
+      this.setState({
+        selectPerson1: false,
+        selectPerson2: true,
+        selectPerson3: false
+      })
+    } else if(id==3){
+      this.setState({
+        selectPerson1: false,
+        selectPerson2: false,
+        selectPerson3: true
+      })
+    }
+
+  }
+
+
+
+  async querySelect(projectsId,trackerId,Select: string,n: number = 0) {
+    this.state.endnum+=n;
+    let arraySelect=['created_on:desc','updated_on']
+    this.setState({
+      arraySelect:Select
+    })
+    arraySelect.push(Select);
+    console.log(arraySelect);
+    await Taro.showLoading({ title: 'loading', mask: true});
+    try {
+      const url = await guigu.getUrl(`/issues.json`, {
+        project_id: projectsId,
+        tracker_id: trackerId,
+        offset:0,
+        limit:this.state.endnum,
+        sort: arraySelect
+      });
+      console.log(url);
+      try {
+        const res= await Taro.request({method: 'GET', url});
+        console.log(1111111)
+        console.log(res.data.issues)
+        let issues=res.data.issues
+        this.setState({issues : issues ||'',
+          selecList:issues ||''
+        });
+      } catch (e) {
+        console.log(e);
+        console.log('请求错误信息');
+      }
+      console.log(url)
+
+    } catch(e){
+      console.log(e)
+    } finally {
+      await Taro.hideLoading();
+    }}
+  issuesSelect(element:string){
+     this.querySelect(this.state.projectsId,this.state.trackerId,element,0)
+    this.setState({
+      selectPerson1: false,
+      selectPerson2: false,
+      selectPerson3: false,
+    }）
+
+  }
+  //查数数据
+  selectArr (e:string) {
+     e="🚫已否决"
+    let arr = [];
+    console.log(e);
+    for (var i = 0; i < this.state.issues.length; i++) {
+      // 如果字符串中不包含目标字符会返回-1
+      if (this.state.issues[i].status.name.indexOf(e) >= 0) {
+        arr.push(this.state.issues[i]);
+      }
+      console.log(arr)
+      this.setState({
+        value: e,
+        selecList: arr?arr:''
+      })
+    }
+    this.setState({
+      selectPerson1: false,
+      selectPerson2: false,
+      selectPerson3: false
+    }）;
+
+  }
+
+  render() {
+    return (<View>
+        <View className="page-hear">
+        <View className="phone_one">
+          <View className="phone_personal" onClick={_ => this.clickPerson(1}>{this.state.firstPerson[0]}</View>
+          <View className="phone_personal" onClick={_ => this.clickPerson(2)}>{this.state.firstPerson[1]}</View>
+          <View className="phone_personal" onClick={_ => this.clickPerson(3)}>{this.state.firstPerson[2]}</View>
+        </View>
+        <View className="person_box" >
+          {this.state.selectPerson1 && <View className="phone_select"  >
+          <View className="select_one" onClick={_ => this.selectArr()} >🚫已否决</View>
+          <View className="select_one" onClick={_ => this.issuesSelect('status_id=closed')} >关 闭</View>
+          <View className="select_one" onClick={_ => this.issuesSelect('status_id')} >全 部</View>
+        </View>}
+      </View>
+        <View className="person_box">
+          {this.state.selectPerson2 && <View className="phone_select"  >
+            <View className="select_one" onClick={_ => this.issuesSelect(4)} >作 者</View>
+            <View className="select_one" onClick={_ => this.issuesSelect(5)} >时 间</View>
+            <View className="select_one" onClick={_ => this.issuesSelect(6)} >全 部</View>
+          </View>}
+        </View>
+
+        <View className="person_box">
+          { this.state.selectPerson3 && <View className="phone_select"  >
+            <View className="select_one" onClick={_ => this.issuesSelect(7)} >状 态 </View>
+            <View className="select_one" onClick={_ => this.issuesSelect(8)} >指 派 人 </View>
+            <View className="select_one" onClick={_ => this.issuesSelect(9)} >全 部 </View>
+          </View>}
+        </View>
+        </View>
+        <View  className='atlist'>
+
+        {this.state.selecList.map((item)=> <View>
+
+            <AtList>
+              <AtListItem
+                arrow='right'
+                note={item.author.name}
+                title={item.subject}
+                extraText={item.status.name}
+                onClick={_ => this.handleClick(item.id)}
+              />
+            </AtList>
+
+          </View>
+
+        )}
+        <AtLoadMore
+          onClick={this.moreClick.bind(this)}
+          status={this.state.status}
+        />
+        </View>
+      </View>
+
+    )
+  }
+}
+
+
+------------a.scss--------------
+
+.page-hear{
+  background: #fff;
+  position:fixed;
+  top:0;
+  width: 100%;
+  z-index: 2;
+}
+.phone_personal{
+  width: 100%;
+  color:#6190E8;
+  height:100rpx;
+  line-height:100rpx;
+  text-align: center;
+}
+.phone_one{
+  display: flex;
+  position: relative;
+  justify-content: space-between;
+  background-color:rgb(239, 239, 239);
+  width:98%;
+  height:100rpx;
+  margin:0 auto;
+  border-radius: 10rpx;
+  border-bottom:2rpx solid rgb(255, 255, 255);
+}
+.person_box{
+  position: relative;
+}
+.phone_select{
+  margin-top:0;
+  z-index: 100;
+  position: absolute;
+}
+.select_one{
+  text-align: center;
+  background-color:rgb(239, 239, 239);
+  color: #6190E8;
+  width:733rpx;
+  height:100rpx;
+  line-height:100rpx;
+  border-bottom:2rpx solid rgb(255, 255, 255);
+  margin-left:10rpx;
+  border-radius: 10rpx;
+
+}
+
+.rotateRight{
+  transform: rotate(180deg);
+}
+.atlist{
+
+  margin-top: 60PX;
+}
