@@ -1,0 +1,6 @@
+                  <View
+                    className='listName'
+                    style={'padding-left:' + 10 * item.level + 'PX'}
+                    onClick={_ => this.handleClick(item.id, item.name)}>
+                    {item.name}
+                  </View>
