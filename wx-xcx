@@ -1,0 +1,8 @@
+  var phone = Taro.getSystemInfoSync();  //调用方法获取机型    
+    console.log(phone.system);
+    console.log(phone.system.indexOf('iOS') > -1);
+    if (phone.system.indexOf('iOS') > -1) {
+      this.setState({detail: true});
+    } else {
+      this.setState({detail: false});
+    }
