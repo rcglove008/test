@@ -1,0 +1,6 @@
+const users=res.items.map(item => ({
+    url: item.html_url,      
+    img: item.avatar_url,      
+    name: item.login,
+    })
+);
