@@ -1,0 +1,19 @@
+{this.state.projectList.map((item) =>
+                        <View className='list'>
+						 //用find查找 数组favoriteLists 里面的ID 是否含有（projectList里的id）
+						 //如果有返回对象 没有为空， 接着写三元判断显示收藏图标 返回有对象说明已经收藏
+						 //如果没有返回 没有收藏状态
+                          {this.state.favoriteLists.find((favorite_id) => (favorite_id.id == item.id)) ? (
+                            <AtIcon value='star-2' size='22' color='#8ec0fa' className='meCollect'
+                                    onClick={_ => this.favorite(item.id)}></AtIcon>) : (
+                            <AtIcon value='star' size='22' color='#8ec0fa' className='meCollect'
+                                    onClick={_ => this.favorite(item.id)}></AtIcon>)}
+                          <View
+                            className='listName'
+                            style={'padding-left:' + 10 * item.level + 'PX'}
+                            onClick={_ => this.handleClick(item.id, item.name)}>
+                            {item.name}
+                          </View>
+                        </View>
+                      )}
+					  
